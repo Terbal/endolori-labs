@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endolori Labs — Statistiques</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<script>
+  // Access gate: only reachable right after typing the secret password on the homepage.
+  if (sessionStorage.getItem('fortuna_access') !== '1') {
+    window.location.replace('/');
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060d; --surface:#0c1226; --ink:#EEF1FB; --ink-soft:#8b93b3; --ink-dim:#565f82;
+  --accent:#6E8CFF; --accent-soft:#93AEFF; --border:rgba(255,255,255,0.10);
+  --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'IBM Plex Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);min-height:100vh;padding:60px 6vw 80px;}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;}
+.sub{color:var(--ink-soft);margin-top:8px;font-size:14px;}
+.warn{
+  margin-top:24px;padding:14px 18px;border-radius:14px;background:rgba(255,180,80,.08);
+  border:1px solid rgba(255,180,80,.25);color:#e8c088;font-size:13px;line-height:1.6;max-width:760px;
+}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;}
+@media(max-width:900px){.grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:520px){.grid{grid-template-columns:1fr;}}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px 22px;
+}
+.card .label{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);}
+.card .value{font-family:var(--font-display);font-size:32px;font-weight:600;margin-top:10px;color:var(--ink);}
+.card .value .unit{font-size:15px;color:var(--ink-soft);font-weight:500;margin-left:4px;}
+.section{margin-top:44px;}
+.section h2{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px;}
+.bars{display:flex;flex-direction:column;gap:12px;}
+.bar-row{display:flex;align-items:center;gap:14px;}
+.bar-row .name{width:110px;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
+.bar-track{flex:1;height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-soft));border-radius:6px;transition:width .6s ease;}
+.bar-row .count{width:44px;text-align:right;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-dim);flex-shrink:0;}
+.meta{margin-top:44px;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-dim);line-height:2;}
+.reset-btn{
+  margin-top:44px;padding:11px 22px;border-radius:100px;border:1px solid var(--border);background:transparent;
+  color:var(--ink-soft);font-size:13px;font-family:var(--font-body);cursor:pointer;transition:.3s;
+}
+.reset-btn:hover{border-color:#ff6b6b;color:#ff6b6b;}
+.empty{margin-top:60px;color:var(--ink-dim);font-size:14px;}
+</style>
+</head>
+<body>
+  <h1>Endolori Labs — Statistiques du site</h1>
+  <p class="sub">Tableau de bord privé — accès via /fortuna_major</p>
+
+  <div class="warn">
+    Ces statistiques sont enregistrées de façon <strong>permanente côté serveur</strong> dans <code>data/stats.json</code> — elles cumulent les visites de <strong>tous les visiteurs du site</strong>, pas seulement ce navigateur. Cette page reste accessible uniquement en tapant "fortuna_major" au clavier sur la page d'accueil — sans ce mot de passe, on ne peut pas y accéder (protection basée sur une session de navigation, pas un vrai compte utilisateur).
+  </div>
+
+  <div id="content"></div>
+
+<script>
+async function loadStats(){
+  try{
+    const res = await fetch('/api/stats', {cache:'no-store'});
+    if(!res.ok) return null;
+    return await res.json();
+  }catch(e){ return null; }
+}
+function fmtDuration(totalSeconds){
+  totalSeconds = Math.round(totalSeconds || 0);
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.floor((totalSeconds%3600)/60);
+  const s = totalSeconds%60;
+  if(h>0) return `${h}h ${m}m ${s}s`;
+  if(m>0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+function fmtDate(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleString('fr-FR', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+async function render(){
+  const stats = await loadStats();
+  const content = document.getElementById('content');
+  if(!stats){
+    content.innerHTML = '<p class="empty">Impossible de charger les statistiques pour l\'instant (le serveur est peut-être en train de démarrer). Réessaie dans quelques secondes.</p>';
+    return;
+  }
+
+  const avgWatch = stats.videoPlays > 0 ? stats.totalWatchSeconds / stats.videoPlays : 0;
+  const lang = stats.langCounts || {en:0,fr:0};
+  const theme = stats.themeCounts || {light:0,dark:0};
+  const device = stats.deviceCounts || {mobile:0,desktop:0};
+  const langTotal = Math.max(1, (lang.en||0) + (lang.fr||0));
+  const themeTotal = Math.max(1, (theme.light||0) + (theme.dark||0));
+  const deviceTotal = Math.max(1, (device.mobile||0) + (device.desktop||0));
+
+  content.innerHTML = `
+    <div class="grid">
+      <div class="card"><div class="label">Pages vues</div><div class="value">${stats.pageViews||0}</div></div>
+      <div class="card"><div class="label">Clics sur la vidéo</div><div class="value">${stats.videoPlays||0}</div></div>
+      <div class="card"><div class="label">Temps de visionnage total</div><div class="value" style="font-size:22px;">${fmtDuration(stats.totalWatchSeconds)}</div></div>
+      <div class="card"><div class="label">Temps moyen / lecture</div><div class="value" style="font-size:22px;">${fmtDuration(avgWatch)}</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Langue préférée (clics sur le switch)</h2>
+      <div class="bars">
+        <div class="bar-row"><span class="name">Français</span><div class="bar-track"><div class="bar-fill" style="width:${(lang.fr||0)/langTotal*100}%"></div></div><span class="count">${lang.fr||0}</span></div>
+        <div class="bar-row"><span class="name">Anglais</span><div class="bar-track"><div class="bar-fill" style="width:${(lang.en||0)/langTotal*100}%"></div></div><span class="count">${lang.en||0}</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Thème préféré (clics sur le switch)</h2>
+      <div class="bars">
+        <div class="bar-row"><span class="name">Clair</span><div class="bar-track"><div class="bar-fill" style="width:${(theme.light||0)/themeTotal*100}%"></div></div><span class="count">${theme.light||0}</span></div>
+        <div class="bar-row"><span class="name">Sombre</span><div class="bar-track"><div class="bar-fill" style="width:${(theme.dark||0)/themeTotal*100}%"></div></div><span class="count">${theme.dark||0}</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Appareils</h2>
+      <div class="bars">
+        <div class="bar-row"><span class="name">Mobile</span><div class="bar-track"><div class="bar-fill" style="width:${(device.mobile||0)/deviceTotal*100}%"></div></div><span class="count">${device.mobile||0}</span></div>
+        <div class="bar-row"><span class="name">Ordinateur</span><div class="bar-track"><div class="bar-fill" style="width:${(device.desktop||0)/deviceTotal*100}%"></div></div><span class="count">${device.desktop||0}</span></div>
+      </div>
+    </div>
+
+    <div class="meta">
+      Première visite enregistrée : ${fmtDate(stats.firstVisit)}<br>
+      Dernière visite : ${fmtDate(stats.lastVisit)}
+    </div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  render();
+  const btn = document.createElement('button');
+  btn.className = 'reset-btn';
+  btn.textContent = 'Réinitialiser les statistiques (toutes, côté serveur)';
+  btn.addEventListener('click', async function(){
+    if(confirm('Effacer définitivement toutes les statistiques enregistrées sur le serveur ?')){
+      try{
+        await fetch('/api/stats/reset', {method:'POST'});
+      }catch(e){}
+      render();
+    }
+  });
+  document.body.appendChild(btn);
+
+  const logout = document.createElement('button');
+  logout.className = 'reset-btn';
+  logout.style.marginLeft = '12px';
+  logout.textContent = 'Quitter la page secrète';
+  logout.addEventListener('click', function(){
+    sessionStorage.removeItem('fortuna_access');
+    window.location.href = '/';
+  });
+  document.body.appendChild(logout);
+});
+</script>
+</body>
+</html>
