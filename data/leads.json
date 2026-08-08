@@ -1,0 +1,98 @@
+[
+  {
+    "id": "mskvf3iuvwexlp",
+    "companyName": "Kinshasa HR",
+    "sector": "Sous traitance",
+    "teamSize": "6-20",
+    "contactName": "John",
+    "contactEmail": "terbalitojoho@gmail.com",
+    "phone": "0890206733",
+    "answers": {
+      "emailVolume": "low",
+      "peopleInvolved": "one",
+      "manualTracking": "yes",
+      "existingAutomation": "none",
+      "timeLost": "low"
+    },
+    "message": "",
+    "score": 50,
+    "bracket": "moderate",
+    "topFactors": [
+      "manualTracking",
+      "existingAutomation"
+    ],
+    "createdAt": 1786223611542
+  },
+  {
+    "id": "mskvw7jni8iuoe",
+    "companyName": "Kinshasa HR",
+    "sector": "",
+    "teamSize": "6-20",
+    "contactName": "JOEL MOYOWABU",
+    "contactEmail": "joelmoyo249@gmail.com",
+    "phone": "0890206733",
+    "answers": {
+      "emailVolume": "medium",
+      "peopleInvolved": "few",
+      "manualTracking": "yes",
+      "existingAutomation": "none",
+      "timeLost": "medium"
+    },
+    "message": "",
+    "score": 69,
+    "bracket": "high",
+    "topFactors": [
+      "manualTracking",
+      "existingAutomation"
+    ],
+    "createdAt": 1786224409914
+  },
+  {
+    "id": "mskw0l51oscrug",
+    "companyName": "Kinshasa HR",
+    "sector": "Sous traitance",
+    "teamSize": "6-20",
+    "contactName": "JOEL MOYOWABU",
+    "contactEmail": "joelmoyo249@gmail.com",
+    "phone": "0890206733",
+    "answers": {
+      "emailVolume": "high",
+      "peopleInvolved": "many",
+      "manualTracking": "no",
+      "existingAutomation": "none",
+      "timeLost": "medium"
+    },
+    "message": "",
+    "score": 75,
+    "bracket": "high",
+    "topFactors": [
+      "peopleInvolved",
+      "existingAutomation"
+    ],
+    "createdAt": 1786224614149
+  },
+  {
+    "id": "mskxls9mxm5fv2",
+    "companyName": "Kinshasa HR",
+    "sector": "",
+    "teamSize": "1-5",
+    "contactName": "JOEL MOYOWABU",
+    "contactEmail": "joelmoyo249@gmail.com",
+    "phone": "0890206733",
+    "answers": {
+      "emailVolume": "veryhigh",
+      "peopleInvolved": "many",
+      "manualTracking": "no",
+      "existingAutomation": "none",
+      "timeLost": "veryhigh"
+    },
+    "message": "",
+    "score": 93,
+    "bracket": "critical",
+    "topFactors": [
+      "emailVolume",
+      "peopleInvolved"
+    ],
+    "createdAt": 1786227282778
+  }
+]

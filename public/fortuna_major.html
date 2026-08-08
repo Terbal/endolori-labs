@@ -50,6 +50,21 @@ h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34
 }
 .reset-btn:hover{border-color:#ff6b6b;color:#ff6b6b;}
 .empty{margin-top:60px;color:var(--ink-dim);font-size:14px;}
+.lead-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:14px;
+}
+.lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+.lead-company{font-family:var(--font-display);font-size:17px;font-weight:600;}
+.lead-score{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;padding:5px 12px;border-radius:100px;flex-shrink:0;
+}
+.lead-score.low{color:#2e8b57;background:rgba(46,139,87,.12);}
+.lead-score.moderate{color:var(--accent);background:rgba(110,140,255,.12);}
+.lead-score.high{color:#c9820a;background:rgba(201,130,10,.12);}
+.lead-score.critical{color:#ff6b6b;background:rgba(255,107,107,.12);}
+.lead-meta{font-size:12.5px;color:var(--ink-dim);margin-top:6px;}
+.lead-answers{margin-top:12px;font-size:13px;color:var(--ink-soft);line-height:1.9;}
+.lead-message{margin-top:10px;font-size:13px;color:var(--ink-soft);font-style:italic;border-left:2px solid var(--border);padding-left:12px;}
 </style>
 </head>
 <body>
@@ -61,6 +76,7 @@ h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34
   </div>
 
   <div id="content"></div>
+  <div id="leadsContent"></div>
 
 <script>
 async function loadStats(){
@@ -140,8 +156,55 @@ async function render(){
   `;
 }
 
+async function loadLeads(){
+  try{
+    const res = await fetch('/api/leads', {cache:'no-store'});
+    if(!res.ok) return [];
+    return await res.json();
+  }catch(e){ return []; }
+}
+
+async function renderLeads(){
+  const leads = await loadLeads();
+  const wrap = document.getElementById('leadsContent');
+  const sorted = [...leads].sort((a,b)=> b.createdAt - a.createdAt);
+  let html = `<div class="section"><h2>Demandes reçues (${sorted.length})</h2>`;
+  if(!sorted.length){
+    html += '<p class="empty">Aucune demande reçue pour l\'instant.</p>';
+  } else {
+    sorted.forEach(lead=>{
+      html += `
+        <div class="lead-card">
+          <div class="lead-top">
+            <div>
+              <div class="lead-company">${escapeHtml(lead.companyName)}</div>
+              <div class="lead-meta">${escapeHtml(lead.contactName)} · ${escapeHtml(lead.contactEmail)}${lead.phone ? ' · ' + escapeHtml(lead.phone) : ''}</div>
+              <div class="lead-meta">${escapeHtml(lead.sector || '—')} · ${escapeHtml(lead.teamSize || '—')} · ${fmtDate(lead.createdAt)}</div>
+            </div>
+            <span class="lead-score ${lead.bracket}">${lead.score}% · ${lead.bracket}</span>
+          </div>
+          <div class="lead-answers">
+            Volume e-mails : ${escapeHtml(lead.answers.emailVolume)} &nbsp;·&nbsp;
+            Personnes impliquées : ${escapeHtml(lead.answers.peopleInvolved)} &nbsp;·&nbsp;
+            Suivi manuel : ${escapeHtml(lead.answers.manualTracking)} &nbsp;·&nbsp;
+            Automatisation existante : ${escapeHtml(lead.answers.existingAutomation)} &nbsp;·&nbsp;
+            Temps perdu/semaine : ${escapeHtml(lead.answers.timeLost)}
+          </div>
+          ${lead.message ? `<div class="lead-message">"${escapeHtml(lead.message)}"</div>` : ''}
+        </div>`;
+    });
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   render();
+  renderLeads();
   const btn = document.createElement('button');
   btn.className = 'reset-btn';
   btn.textContent = 'Réinitialiser les statistiques (toutes, côté serveur)';

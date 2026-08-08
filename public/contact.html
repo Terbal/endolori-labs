@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Démarrer une conversation — Diagnostic automatisation | Endolori Labs</title>
+<meta name="description" content="Répondez à quelques questions sur votre entreprise et découvrez en 2 minutes votre score de besoin en automatisation, puis recevez un audit personnalisé d'Endolori Labs.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0B1F3A">
+<link rel="canonical" href="https://endolori-labs.onrender.com/contact.html">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect width='24' height='24' rx='6' fill='%230B1F3A'/%3E%3Ccircle cx='12' cy='12' r='7.2' stroke='white' stroke-width='1.3'/%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%232563EB'/%3E%3Cpath d='M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6' stroke='white' stroke-width='1.3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<nav id="nav">
+  <a href="/" class="logo" aria-label="Endolori Labs — retour à l'accueil">
+    <span class="logo-mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><circle cx="12" cy="12" r="9" stroke-width="1.2"/><circle cx="12" cy="12" r="3.4" stroke="#2563EB" stroke-width="1.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-width="1.2"/></svg>
+    </span>
+    <span class="brand-text">Endolori Labs</span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="/#approach" data-i18n="nav.approach">Approach</a>
+      <a href="/smart-inbox.html" data-i18n="nav.products">Products</a>
+      <a href="/#work" data-i18n="nav.work">Work With Us</a>
+      <a href="/contact.html" data-i18n="nav.contact">Contact</a>
+    </div>
+    <div class="lang-switch" data-lang-switch>
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="fr" class="active">FR</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.4 4.4l1.8 1.8M17.8 17.8l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.4 19.6l1.8-1.8M17.8 6.2l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+    </button>
+    <a href="/smart-inbox.html#demo" class="nav-cta" data-i18n="nav.cta">Watch Video</a>
+    <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Menu"><span></span></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/#approach" data-i18n="nav.approach">Approach</a>
+  <a href="/smart-inbox.html" data-i18n="nav.products">Products</a>
+  <a href="/#work" data-i18n="nav.work">Work With Us</a>
+  <a href="/contact.html" data-i18n="nav.contact">Contact</a>
+  <a href="/smart-inbox.html#demo" data-i18n="nav.cta">Watch Video</a>
+  <div class="lang-switch" data-lang-switch>
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" data-lang="fr" class="active">FR</button>
+  </div>
+</div>
+
+<section class="contact-hero">
+  <div class="mesh-bg"></div>
+  <div class="hero-grid-lines"></div>
+  <div class="contact-hero-content">
+    <a href="/" class="back-home-link" data-i18n="sip.backHome">← Back to Endolori Labs</a><br>
+    <h1 data-i18n="lead.title">Let's talk about your operations.</h1>
+    <p class="subtitle" data-i18n="lead.subtitle">Answer a few questions and get an instant automation-need score, plus a personalized follow-up from our team.</p>
+  </div>
+</section>
+
+<div class="form-wrap">
+  <div class="form-card">
+
+    <div class="form-progress">
+      <span class="done"></span><span></span><span></span>
+    </div>
+
+    <form id="leadForm" novalidate>
+      <input type="text" id="honeypot" name="website" class="honeypot-field" tabindex="-1" autocomplete="off">
+
+      <!-- STEP 1: company info -->
+      <div class="form-step active">
+        <div class="field">
+          <label data-i18n="lead.f.companyName">Company name</label>
+          <input type="text" id="companyName" required>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.f.sector">Industry (optional)</label>
+          <input type="text" id="sector">
+        </div>
+        <div class="field">
+          <label data-i18n="lead.f.teamSize">Team size</label>
+          <select id="teamSize">
+            <option value="1-5" data-i18n="lead.f.teamSize.1">1–5 people</option>
+            <option value="6-20" data-i18n="lead.f.teamSize.2">6–20 people</option>
+            <option value="21-50" data-i18n="lead.f.teamSize.3">21–50 people</option>
+            <option value="50+" data-i18n="lead.f.teamSize.4">50+ people</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.f.contactName">Your name</label>
+          <input type="text" id="contactName" required>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.f.contactEmail">Your email</label>
+          <input type="email" id="contactEmail" required>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.f.phone">Phone (optional)</label>
+          <input type="tel" id="phone">
+        </div>
+      </div>
+
+      <!-- STEP 2: diagnostic -->
+      <div class="form-step">
+        <div class="field">
+          <label data-i18n="lead.q.emailVolume">How many business emails do you receive per day, roughly?</label>
+          <div class="option-grid">
+            <div class="option-card" data-group="emailVolume" data-value="low" data-i18n="lead.q.emailVolume.low">Fewer than 20</div>
+            <div class="option-card" data-group="emailVolume" data-value="medium" data-i18n="lead.q.emailVolume.medium">20 to 50</div>
+            <div class="option-card" data-group="emailVolume" data-value="high" data-i18n="lead.q.emailVolume.high">50 to 150</div>
+            <div class="option-card" data-group="emailVolume" data-value="veryhigh" data-i18n="lead.q.emailVolume.veryhigh">More than 150</div>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.q.peopleInvolved">How many people handle these emails manually?</label>
+          <div class="option-grid">
+            <div class="option-card" data-group="peopleInvolved" data-value="one" data-i18n="lead.q.peopleInvolved.one">Just one person</div>
+            <div class="option-card" data-group="peopleInvolved" data-value="few" data-i18n="lead.q.peopleInvolved.few">2 to 3 people</div>
+            <div class="option-card" data-group="peopleInvolved" data-value="many" data-i18n="lead.q.peopleInvolved.many">4 or more people</div>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.q.manualTracking">Do you track these requests manually (spreadsheets, notes)?</label>
+          <div class="option-grid">
+            <div class="option-card" data-group="manualTracking" data-value="yes" data-i18n="lead.q.manualTracking.yes">Yes, with spreadsheets/files</div>
+            <div class="option-card" data-group="manualTracking" data-value="no" data-i18n="lead.q.manualTracking.no">No structured tracking</div>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.q.existingAutomation">Do you already have any automation in place?</label>
+          <div class="option-grid">
+            <div class="option-card" data-group="existingAutomation" data-value="none" data-i18n="lead.q.existingAutomation.none">None</div>
+            <div class="option-card" data-group="existingAutomation" data-value="partial" data-i18n="lead.q.existingAutomation.partial">Partial</div>
+            <div class="option-card" data-group="existingAutomation" data-value="full" data-i18n="lead.q.existingAutomation.full">Yes, fully</div>
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="lead.q.timeLost">How much time does your team lose on this per week, roughly?</label>
+          <div class="option-grid">
+            <div class="option-card" data-group="timeLost" data-value="low" data-i18n="lead.q.timeLost.low">Less than 2h</div>
+            <div class="option-card" data-group="timeLost" data-value="medium" data-i18n="lead.q.timeLost.medium">2 to 5h</div>
+            <div class="option-card" data-group="timeLost" data-value="high" data-i18n="lead.q.timeLost.high">5 to 15h</div>
+            <div class="option-card" data-group="timeLost" data-value="veryhigh" data-i18n="lead.q.timeLost.veryhigh">More than 15h</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: message -->
+      <div class="form-step">
+        <div class="field">
+          <label data-i18n="lead.f.message">Anything specific we should know? (optional)</label>
+          <textarea id="message" placeholder=""></textarea>
+          <p class="hint" data-i18n="lead.f.messageHint">Tools you use, specific pain points, timeline — anything that helps us prepare your audit.</p>
+        </div>
+      </div>
+
+      <p class="form-error" id="formError"></p>
+
+      <div class="form-nav">
+        <button type="button" class="btn-ghost" data-prev style="visibility:hidden;" id="prevBtn" data-i18n="lead.back">Back</button>
+        <button type="button" class="btn-primary" data-next data-i18n="lead.next">Next</button>
+        <button type="submit" class="btn-primary" id="submitBtn" style="display:none;" data-i18n="lead.submit">Get my score</button>
+      </div>
+    </form>
+
+    <!-- RESULT VIEW -->
+    <div class="result-wrap" id="resultView">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 120 120">
+          <circle class="score-ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="score-ring-fill" id="scoreRingFill" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div class="score-value">
+          <span class="num" id="scoreNum">0</span>
+          <span class="pct">%</span>
+        </div>
+      </div>
+      <div id="resultBracket" class="result-bracket low">—</div>
+      <p class="result-explain" id="resultExplain"></p>
+      <div class="result-factors" id="resultFactors"></div>
+      <p class="result-note" data-i18n="lead.result.note">Thanks — we've received your diagnostic. Our team will follow up by email with a tailored audit and proposal.</p>
+    </div>
+
+  </div>
+  <p style="text-align:center;margin-top:24px;">
+    <a href="mailto:joelmoyo249@gmail.com" style="font-size:13px;color:var(--ink-dim);" data-i18n="lead.emailDirect">Prefer email? Write to us directly →</a>
+  </p>
+</div>
+
+<footer>
+  <span data-i18n="footer.copy">© 2026 Endolori Labs</span>
+  <span data-i18n="footer.tag">Pioneering business automation engineering in the Democratic Republic of the Congo</span>
+</footer>
+
+<script src="/assets/js/common.js"></script>
+<script src="/assets/js/i18n.js"></script>
+<script>
+document.getElementById('prevBtn').addEventListener('click', function(){
+  // toggle prev button visibility handled inline for simplicity
+});
+(function(){
+  const progress = document.querySelectorAll('.form-progress span');
+  const nextBtns = document.querySelectorAll('[data-next]');
+  const submitBtn = document.getElementById('submitBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const steps = document.querySelectorAll('.form-step');
+  function sync(){
+    const activeIndex = Array.from(steps).findIndex(s=>s.classList.contains('active'));
+    prevBtn.style.visibility = activeIndex === 0 ? 'hidden' : 'visible';
+    const lastStep = activeIndex === steps.length - 1;
+    nextBtns.forEach(b=> b.style.display = lastStep ? 'none' : 'inline-flex');
+    submitBtn.style.display = lastStep ? 'inline-flex' : 'none';
+  }
+  const obs = new MutationObserver(sync);
+  steps.forEach(s=> obs.observe(s, {attributes:true, attributeFilter:['class']}));
+  sync();
+})();
+</script>
+<script src="/assets/js/contact.js"></script>
+</body>
+</html>
