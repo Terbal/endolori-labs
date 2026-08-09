@@ -236,81 +236,84 @@ async function sendLeadEmail(lead) {
 }
 
 app.post("/api/leads", async (req, res) => {
-  const body = req.body || {};
+  try {
+    const body = req.body || {};
 
-  // honeypot spam trap: real users never fill this hidden field
-  if (body.website) {
+    // Honeypot anti-spam
+    if (body.website) {
+      return res.json({
+        score: 0,
+        bracket: "low",
+        factors: [],
+        topFactors: [],
+        emailSent: false,
+      });
+    }
+
+    const required = ["companyName", "contactName", "contactEmail"];
+    for (const field of required) {
+      if (
+        !body[field] ||
+        typeof body[field] !== "string" ||
+        !body[field].trim()
+      ) {
+        return res
+          .status(400)
+          .json({ error: `Missing required field: ${field}` });
+      }
+    }
+
+    const answers = {
+      emailVolume: body.emailVolume || "low",
+      peopleInvolved: body.peopleInvolved || "one",
+      manualTracking: body.manualTracking || "no",
+      existingAutomation: body.existingAutomation || "none",
+      timeLost: body.timeLost || "low",
+    };
+
+    const { score, bracket, factors, topFactors } = computeScore(answers);
+
+    const lead = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      companyName: body.companyName.trim(),
+      sector: (body.sector || "").trim(),
+      teamSize: (body.teamSize || "").trim(),
+      contactName: body.contactName.trim(),
+      contactEmail: body.contactEmail.trim(),
+      phone: (body.phone || "").trim(),
+      answers,
+      message: (body.message || "").trim(),
+      score,
+      bracket,
+      topFactors,
+      createdAt: Date.now(),
+    };
+
+    // 1. Écriture sécurisée dans le fichier local
+    try {
+      const leads = readLeads();
+      leads.push(lead);
+      await writeLeads(leads);
+    } catch (fsErr) {
+      console.error("Erreur lors de l'écriture du lead dans JSON:", fsErr);
+    }
+
+    // 2. Envoi de l'email
+    const emailResult = await sendLeadEmail(lead);
+
+    // 3. Réponse garantie au client (évite le crash 502)
     return res.json({
-      score: 0,
-      bracket: "low",
-      factors: [],
-      topFactors: [],
-      emailSent: false,
+      score,
+      bracket,
+      factors,
+      topFactors,
+      emailSent: emailResult.sent,
+      emailReason: emailResult.reason || null,
     });
+  } catch (globalErr) {
+    console.error("Erreur critique sur /api/leads:", globalErr);
+    return res.status(500).json({ error: "Erreur interne du serveur" });
   }
-
-  const required = ["companyName", "contactName", "contactEmail"];
-  for (const field of required) {
-    if (
-      !body[field] ||
-      typeof body[field] !== "string" ||
-      !body[field].trim()
-    ) {
-      return res
-        .status(400)
-        .json({ error: `Missing required field: ${field}` });
-    }const emailResult = await sendLeadEmail(lead);
-
-  res.json({
-    score,
-    bracket,
-    factors,
-    topFactors,
-    emailSent: emailResult.sent,
-    emailReason: emailResult.reason || null // Affiche le motif si emailSent est false
-  });
-
-  }
-
-  const answers = {
-    emailVolume: body.emailVolume || "low",
-    peopleInvolved: body.peopleInvolved || "one",
-    manualTracking: body.manualTracking || "no",
-    existingAutomation: body.existingAutomation || "none",
-    timeLost: body.timeLost || "low",
-  };
-
-  const { score, bracket, factors, topFactors } = computeScore(answers);
-
-  const lead = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
-    companyName: body.companyName.trim(),
-    sector: (body.sector || "").trim(),
-    teamSize: (body.teamSize || "").trim(),
-    contactName: body.contactName.trim(),
-    contactEmail: body.contactEmail.trim(),
-    phone: (body.phone || "").trim(),
-    answers,
-    message: (body.message || "").trim(),
-    score,
-    bracket,
-    topFactors,
-    createdAt: Date.now(),
-  };
-
-  const leads = readLeads();
-  leads.push(lead);
-  await writeLeads(leads);
-
-  const emailResult = await sendLeadEmail(lead);
-
-  res.json({
-    score,
-    bracket,
-    factors,
-    topFactors,
-    emailSent: emailResult.sent,
-  });
 });
 
 app.get("/api/leads", (req, res) => {
