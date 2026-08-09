@@ -259,7 +259,17 @@ app.post("/api/leads", async (req, res) => {
       return res
         .status(400)
         .json({ error: `Missing required field: ${field}` });
-    }
+    }const emailResult = await sendLeadEmail(lead);
+
+  res.json({
+    score,
+    bracket,
+    factors,
+    topFactors,
+    emailSent: emailResult.sent,
+    emailReason: emailResult.reason || null // Affiche le motif si emailSent est false
+  });
+
   }
 
   const answers = {
