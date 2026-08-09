@@ -182,12 +182,18 @@ function getTransporter() {
     );
     return null;
   }
+
   return nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // TLS/SSL direct sur le port 465 (débloque le timeout)
     auth: {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
     },
+    connectionTimeout: 10000, // 10 secondes max
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
   });
 }
 
