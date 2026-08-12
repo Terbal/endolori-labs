@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('endolori_theme');
+    if(t === 'light' || t === 'dark'){ document.documentElement.setAttribute('data-theme', t); }
+    var l = localStorage.getItem('endolori_lang');
+    if(l === 'en' || l === 'fr'){ document.documentElement.setAttribute('lang', l); document.documentElement.setAttribute('data-lang-pref', l); }
+  }catch(e){}
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Endolori Labs — Ingénierie de systèmes d'automatisation d'entreprise | RD Congo</title>
@@ -406,7 +416,8 @@
   <span data-i18n="footer.tag">Pioneering business automation engineering in the Democratic Republic of the Congo</span>
 </footer>
 
-<script src="/assets/js/common.js" defer></script>
+<script src="/assets/js/config.js"></script>
+<script src="/assets/js/common.js"></script>
 <script src="/assets/js/i18n.js"></script>
 <script src="/assets/js/home.js"></script>
 </body>

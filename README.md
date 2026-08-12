@@ -1,143 +1,230 @@
-# Endolori Labs — site + API de statistiques
+# Endolori Labs — site (frontend) + API (backend)
 
-## Structure du projet
+Architecture en deux services séparés, comme recommandé :
 
 ```
-project/
-├── server.js               → serveur Express (site + API stats + API leads)
-├── package.json
-├── data/
-│   ├── stats.json           → statistiques de visite (permanent)
-│   └── leads.json           → demandes reçues via le formulaire (permanent)
-└── public/
-    ├── index.html           → page d'accueil
-    ├── smart-inbox.html      → page produit dédiée à Smart Inbox (SEO)
-    ├── contact.html          → formulaire "Démarrer une conversation" + diagnostic automatisation
-    ├── fortuna_major.html    → tableau de bord secret (statistiques + demandes reçues)
-    ├── thumbnail.jpg         → miniature de la vidéo explicative
-    ├── video.mp4             → À AJOUTER TOI-MÊME (ta vraie vidéo explicative)
-    ├── robots.txt
-    ├── sitemap.xml
-    └── assets/
-        ├── css/
-        │   └── style.css     → tout le CSS du site (partagé entre les pages)
-        └── js/
-            ├── common.js     → thème, menu mobile, curseur, scroll nav, logo, mot de passe secret, tracking
-            ├── i18n.js       → dictionnaire FR/EN + logique de traduction (partagé)
-            ├── home.js       → scripts propres à la page d'accueil (sphère, canvas, storytelling...)
-            ├── product.js    → scripts propres à la page Smart Inbox (FAQ, features, démo)
-            └── contact.js    → logique du formulaire multi-étapes + calcul et affichage du score
+Endolori/
+├── frontend/     → site public (HTML/CSS/JS statique) → Render Static Site
+└── backend/      → API Node/Express (stats, leads, auth) → Render Web Service
+```
+
+Le frontend se charge **instantanément** (fichiers statiques, jamais de mise
+en veille). Il n'appelle le backend que lorsque c'est nécessaire (envoi du
+formulaire, tracking, connexion admin) — et seulement à ce moment-là le
+backend doit éventuellement se "réveiller".
+
+## 1. Déployer le backend (Render Web Service)
+
+1. Pousse tout le dossier `Endolori/` sur GitHub.
+2. Sur Render : **New +** → **Web Service** → connecte le repo.
+3. **Root Directory** : `backend`
+4. **Build Command** : `npm install`
+5. **Start Command** : `npm start`
+6. Render te donne une URL, ex. `https://endolori-labs-backend.onrender.com`
+   — note-la, tu en as besoin à l'étape 2.
+7. Variables d'environnement à ajouter (**Environment**) :
+
+   | Variable | Rôle | Obligatoire ? |
+   |---|---|---|
+   | `FRONTEND_ORIGIN` | URL exacte de ton frontend (étape 2) | Recommandé |
+   | `ADMIN_USERNAME` | identifiant pour `/fortuna_major` | Oui, pour l'admin |
+   | `ADMIN_PASSWORD` | mot de passe pour `/fortuna_major` | Oui, pour l'admin |
+   | `SESSION_SECRET` | chaîne aléatoire (`openssl rand -hex 32`) | Recommandé |
+   | `GMAIL_USER` / `GMAIL_APP_PASSWORD` | notification par e-mail des leads | Optionnel |
+   | `FIREBASE_PROJECT_ID` / `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY` | base de données permanente | Optionnel (sinon JSON local) |
+
+   Voir plus bas pour le détail de chacune.
+
+## 2. Déployer le frontend (Render Static Site)
+
+1. Sur Render : **New +** → **Static Site** → même repo.
+2. **Root Directory** : `frontend`
+3. **Build Command** : *(laisser vide)*
+4. **Publish Directory** : `.`
+5. Render te donne une URL, ex. `https://endolori-labs.onrender.com`.
+6. **Ouvre `frontend/assets/js/config.js`** et remplace la valeur de
+   `window.ENDOLORI_API_BASE` par l'URL exacte de ton **backend** (étape 1.6).
+   Repousse le commit — Render redéploie automatiquement.
+7. Retourne dans les variables d'environnement du **backend** et mets à jour
+   `FRONTEND_ORIGIN` avec l'URL exacte de ce frontend (étape 2.5), puis
+   redéploie le backend pour que le CORS l'autorise.
+
+C'est tout. Les deux services sont maintenant connectés :
+`frontend (statique, jamais de veille) → fetch → backend (API, se réveille si besoin)`.
+
+## ⚠️ Le fameux écran de démarrage Render
+
+Il ne concerne plus que le **backend**, et seulement au moment d'un appel API
+(envoi du formulaire, connexion admin, tracking) — jamais à l'arrivée sur le
+site, qui s'affiche toujours instantanément puisqu'il est maintenant 100%
+statique. C'est exactement le comportement propre que tu voulais.
+
+Le formulaire affiche déjà un état "Envoi en cours…" pendant l'attente, pour
+que ça ne ressemble jamais à un bouton cassé même si le backend met quelques
+secondes à se réveiller.
+
+Si tu veux supprimer complètement cette latence occasionnelle (pas juste
+la cacher), il faut passer le backend sur un plan payant Render (~7$/mois,
+plus de mise en veille) — pas possible à corriger uniquement par du code.
+
+## Développement local
+
+```bash
+cd backend
+npm install
+npm start          # démarre sur http://localhost:3000
+```
+
+Dans `frontend/assets/js/config.js`, mets temporairement :
+```js
+window.ENDOLORI_API_BASE = "http://localhost:3000";
+```
+Puis ouvre les fichiers de `frontend/` directement dans le navigateur, ou
+sers-les avec n'importe quel serveur statique local (`npx serve frontend`).
+
+---
+
+## Structure détaillée
+
+```
+Endolori/
+├── frontend/
+│   ├── index.html
+│   ├── smart-inbox.html
+│   ├── contact.html
+│   ├── thumbnail.jpg
+│   ├── video.mp4              → À AJOUTER TOI-MÊME
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   └── assets/
+│       ├── css/style.css
+│       └── js/
+│           ├── config.js      → URL du backend (À MODIFIER avant déploiement)
+│           ├── common.js      → thème, menu, curseur, mot de passe secret, tracking
+│           ├── i18n.js        → dictionnaire FR/EN
+│           ├── home.js        → scripts de la page d'accueil
+│           ├── product.js     → scripts de la page Smart Inbox
+│           └── contact.js     → formulaire multi-étapes
+│
+└── backend/
+    ├── server.js               → routes + logique métier
+    ├── db.js                   → stockage (Firestore ou JSON local, automatique)
+    ├── auth.js                 → session admin signée
+    ├── package.json
+    ├── data/
+    │   ├── stats.json
+    │   └── leads.json
+    └── views/
+        └── fortuna_major.html  → tableau de bord privé (protégé par session)
 ```
 
 ## Pourquoi une page produit dédiée ?
 
 `smart-inbox.html` est une vraie page séparée (pas une simple ancre `#products`
 sur l'accueil), avec son propre `<title>`, sa propre meta description, son
-propre JSON-LD (`Product` + `FAQPage` + `BreadcrumbList`), et son URL propre :
-`/smart-inbox.html`. C'est ce qui permet à Google de l'indexer et de la faire
-apparaître spécifiquement sur des recherches type "Smart Inbox" ou
-"automatisation email entreprise", en plus de la page d'accueil. Les deux
-pages se renvoient l'une à l'autre (liens internes), ce qui aide aussi le
-référencement.
+propre JSON-LD (`Product` + `FAQPage` + `BreadcrumbList`), et son URL propre.
+Ça permet à Google de l'indexer et de la faire apparaître spécifiquement sur
+des recherches type "Smart Inbox" ou "automatisation email entreprise", en
+plus de la page d'accueil.
 
-## ⚠️ Important : ajoute ta vidéo
+## Base de données : local JSON (par défaut) ou Firebase Firestore (recommandé)
 
-Le fichier `video.mp4` n'est pas inclus. Dépose ta vraie vidéo explicative
-dans `public/video.mp4` (exactement ce nom) avant de déployer, sinon le
-lecteur vidéo (présent sur les deux pages) n'aura rien à lire.
+Le backend choisit automatiquement son mode de stockage :
+
+- **Sans configuration** → `backend/data/stats.json` et `leads.json`. ⚠️ Sur
+  le plan gratuit de Render, ces fichiers peuvent être réinitialisés à
+  chaque redéploiement (pas à cause d'une simple mise en veille — ça, ça ne
+  perd rien — mais bien à chaque nouveau déploiement de code).
+- **Avec les 3 variables Firebase** → bascule automatiquement sur Firestore,
+  une base de données Google gratuite et indépendante de Render. Tes
+  données survivent à n'importe quel redéploiement.
+
+### Configurer Firebase (10 minutes, gratuit)
+
+1. [console.firebase.google.com](https://console.firebase.google.com) → nouveau projet.
+2. **Build → Firestore Database** → **Créer une base de données** → mode **Production** → région proche (ex. `europe-west1`).
+3. **⚙️ Paramètres du projet → Comptes de service** → **Générer une nouvelle clé privée** → un fichier `.json` se télécharge, avec `project_id`, `client_email`, `private_key`.
+4. Sur Render (service **backend**), ajoute :
+   - `FIREBASE_PROJECT_ID` = `project_id`
+   - `FIREBASE_CLIENT_EMAIL` = `client_email`
+   - `FIREBASE_PRIVATE_KEY` = `private_key` **telle quelle, avec les `\n` inclus**
+5. Redéploie. Le log affichera `storage: Firestore`.
+
+Une fois configuré, tu peux aussi consulter les demandes reçues directement
+dans la Firebase Console (**Firestore Database** → collection `leads`) —
+utile si jamais Render est en panne.
+
+## Accès sécurisé au tableau de bord (`fortuna_major`)
+
+1. Taper `fortuna_major` au clavier sur n'importe quelle page du **frontend**
+   ouvre une popup de connexion (nom d'utilisateur + mot de passe).
+2. Les identifiants sont vérifiés côté **backend** contre `ADMIN_USERNAME` /
+   `ADMIN_PASSWORD`.
+3. Si c'est correct, le backend pose un cookie de session sécurisé et
+   redirige vers `<url-du-backend>/fortuna_major`.
+4. Cette page n'est jamais accessible directement (elle n'est même pas dans
+   le dossier statique) — sans session valide, toute tentative renvoie vers
+   l'accueil du frontend, sans donnée renvoyée par l'API.
+
+`SESSION_SECRET` (recommandé) évite que tout le monde soit déconnecté à
+chaque redéploiement du backend.
+
+## Suivi des demandes reçues (statuts, archivage, suppression)
+
+Chaque demande reçue via `/contact.html` a un statut modifiable directement
+depuis `/fortuna_major` :
+
+| Statut | Sens |
+|---|---|
+| Nouveau | Vient d'arriver, pas encore traité |
+| À contacter | Identifié comme à recontacter |
+| Contacté | Premier contact établi |
+| En discussion | Échanges en cours |
+| Proposition envoyée | Une proposition a été transmise |
+| Gagné | Devenu client |
+| Perdu | N'a pas donné suite |
+
+**Archiver** retire une demande de la liste principale sans la supprimer
+(case "Afficher les archivées" pour les revoir). **Supprimer** l'efface
+définitivement (confirmation demandée).
 
 ## Formulaire "Démarrer une conversation" + diagnostic automatisation
 
-Le bouton "Démarrer une conversation" et les CTA "Contact" renvoient
-maintenant vers `/contact.html` : un formulaire en 3 étapes qui calcule un
-score de besoin en automatisation (0-100%) affiché instantanément au
-visiteur, avec une explication des facteurs qui ont le plus pesé dans le
-score.
+Le formulaire en 3 étapes calcule un score de besoin en automatisation
+(0-100%) **côté serveur**, utilisé uniquement en interne pour prioriser
+(visible dans `/fortuna_major`). Le visiteur ne voit jamais ce chiffre : il
+reçoit un message court et honnête — on le recontactera pour lui dire si oui
+ou non une automatisation ferait sens, en expliquant pourquoi, et avec une
+piste de solution si c'est le cas. Pas de promesse automatique de proposition
+commerciale à tout le monde.
 
 À chaque soumission :
-1. La demande est **sauvegardée en permanence** dans `data/leads.json`
-   (visible dans le tableau de bord `/fortuna_major`).
-2. Un **e-mail est envoyé automatiquement à `joelmoyo249@gmail.com`** avec
-   toutes les réponses du formulaire et le score, si l'envoi d'e-mail est
-   configuré (voir ci-dessous). Répondre à cet e-mail répond directement au
-   prospect (`replyTo` est réglé sur son adresse).
+1. Sauvegardée en permanence (Firestore ou `leads.json`).
+2. E-mail automatique à `joelmoyo249@gmail.com` avec toutes les réponses
+   (si Gmail est configuré — voir ci-dessous). Répondre à cet e-mail répond
+   directement au prospect (`replyTo` réglé sur son adresse).
 
 ### Configurer l'envoi d'e-mail (Gmail, gratuit, sans service tiers)
 
-Sans configuration, les demandes sont quand même sauvegardées dans
-`data/leads.json` — tu peux les consulter sur `/fortuna_major` même sans
-avoir configuré l'e-mail. Mais pour recevoir une notification automatique :
+1. Active la validation en deux étapes sur ton compte Gmail.
+2. Crée un "Mot de passe d'application" (`myaccount.google.com/security`).
+3. Sur Render (service **backend**) : `GMAIL_USER` = ton adresse Gmail,
+   `GMAIL_APP_PASSWORD` = le code à 16 caractères généré.
+4. Redéploie.
 
-1. Va dans les paramètres de sécurité de ton compte Gmail (`myaccount.google.com/security`).
-2. Active la **validation en deux étapes** si ce n'est pas déjà fait (obligatoire pour l'étape suivante).
-3. Cherche "**Mots de passe des applications**" (App Passwords) et crée-en un nouveau (nomme-le par ex. "Endolori Labs Site").
-4. Google te donne un code à 16 caractères — copie-le.
-5. Sur Render, va dans **Environment** (variables d'environnement) de ton service et ajoute :
-   - `GMAIL_USER` = ton adresse Gmail complète (ex. `joelmoyo249@gmail.com`)
-   - `GMAIL_APP_PASSWORD` = le code à 16 caractères généré à l'étape 4 (sans espaces)
-6. Redéploie le service. Les e-mails partiront automatiquement à chaque nouvelle demande.
+Ceci n'utilise aucun service tiers commercial — uniquement ton propre compte
+Gmail via la librairie open-source Nodemailer.
 
-Ceci n'utilise **aucun service tiers commercial** (pas de Formspree, Typeform,
-SendGrid...) — uniquement ton propre compte Gmail via la librairie
-open-source Nodemailer.
+## API disponible (backend)
 
-### Comment le score est calculé
+- `GET /api/stats` *(protégé)*
+- `POST /api/stats/bump` `{ "path", "amount" }` (public)
+- `POST /api/stats/reset` *(protégé)*
+- `GET /api/leads` *(protégé)*
+- `POST /api/leads` (public — utilisé par `/contact.html`)
+- `PATCH /api/leads/:id` *(protégé)* `{ "status" }` et/ou `{ "archived" }`
+- `DELETE /api/leads/:id` *(protégé)*
+- `POST /api/auth/login` `{ "username", "password" }`
+- `POST /api/auth/logout`
 
-Cinq facteurs, chacun pondéré, pour un total sur 100 :
-volume d'e-mails reçus, nombre de personnes qui les traitent manuellement,
-présence d'un suivi manuel (tableurs), absence/présence d'automatisation
-existante, temps hebdomadaire perdu. Le calcul est fait **côté serveur**
-(dans `server.js`, fonction `computeScore`) pour que le résultat affiché au
-visiteur soit fiable et cohérent avec ce que tu vois toi-même dans
-`/fortuna_major`. Les seuils (répartition en "faible / modéré / élevé /
-critique") sont ajustables directement dans cette fonction si tu veux
-recalibrer.
-
-
-## Déploiement sur Render
-
-1. Pousse ce dossier `project/` dans un dépôt Git (GitHub/GitLab).
-2. Sur Render : **New +** → **Web Service** → connecte le dépôt.
-3. Render détecte Node.js automatiquement. Configure :
-   - **Build Command** : `npm install`
-   - **Start Command** : `npm start`
-4. Render assigne automatiquement `PORT` — le serveur l'utilise déjà (`process.env.PORT`).
-5. Une fois déployé, ton site sera sur `https://endolori-labs.onrender.com/`
-   (ou le nom que Render t'attribue si différent).
-
-## ⚠️ Important : le disque de Render est éphémère par défaut
-
-Sur le plan **gratuit** de Render, le système de fichiers est réinitialisé
-à chaque redéploiement / redémarrage du service (mise en veille après
-inactivité incluse). Cela veut dire que `data/stats.json` **peut revenir à
-zéro** de temps en temps sur le plan gratuit.
-
-Pour une vraie persistance permanente (jamais réinitialisée), deux options :
-- Ajouter un **Persistent Disk** Render (disponible sur les plans payants) et y
-  pointer `DATA_DIR` dans `server.js`.
-- Ou remplacer le fichier JSON par une vraie base de données hébergée
-  (Postgres sur Render, MongoDB Atlas, Supabase, etc.) — dis-moi si tu veux
-  que je fasse cette migration, c'est directement compatible avec la même
-  API (`/api/stats`, `/api/stats/bump`).
-
-## Comment fonctionne la page secrète
-
-- Elle n'est reliée nulle part dans le site (aucun lien, aucun menu).
-- Sur la page d'accueil, si quelqu'un tape au clavier les caractères
-  `fortuna_major` (n'importe où sur la page, sans champ de saisie), le
-  navigateur est redirigé vers `/fortuna_major`.
-- Cette redirection pose un indicateur temporaire (`sessionStorage`) qui
-  autorise l'accès à la page ; sans être passé par ce mot de passe tapé au
-  clavier, toute tentative d'aller directement sur `/fortuna_major` renvoie
-  automatiquement vers l'accueil.
-- ⚠️ Ce n'est **pas une sécurité forte** (pas de compte, pas de mot de passe
-  serveur) : un visiteur techniquement averti pourrait forcer l'accès via la
-  console du navigateur. C'est une protection "à l'obscurité", suffisante
-  pour un usage interne discret, pas pour protéger des données sensibles.
-
-## API disponible
-
-- `GET /api/stats` → renvoie le contenu actuel de `data/stats.json`
-- `POST /api/stats/bump` avec `{ "path": "videoPlays", "amount": 1 }` →
-  incrémente une valeur (utilisé automatiquement par le site)
-- `POST /api/stats/reset` → remet toutes les statistiques à zéro
+*(protégé)* = nécessite un cookie de session admin valide.

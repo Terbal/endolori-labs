@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Endolori Labs — Statistiques</title>
 <meta name="robots" content="noindex, nofollow, noarchive">
-<script>
-  // Access gate: only reachable right after typing the secret password on the homepage.
-  if (sessionStorage.getItem('fortuna_access') !== '1') {
-    window.location.replace('/');
-  }
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -23,8 +17,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--font-body);min-heig
 h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;}
 .sub{color:var(--ink-soft);margin-top:8px;font-size:14px;}
 .warn{
-  margin-top:24px;padding:14px 18px;border-radius:14px;background:rgba(255,180,80,.08);
-  border:1px solid rgba(255,180,80,.25);color:#e8c088;font-size:13px;line-height:1.6;max-width:760px;
+  margin-top:24px;padding:14px 18px;border-radius:14px;background:rgba(110,140,255,.08);
+  border:1px solid rgba(110,140,255,.25);color:var(--accent-soft);font-size:13px;line-height:1.6;max-width:760px;
 }
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px;}
 @media(max-width:900px){.grid{grid-template-columns:1fr 1fr;}}
@@ -36,7 +30,7 @@ h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34
 .card .value{font-family:var(--font-display);font-size:32px;font-weight:600;margin-top:10px;color:var(--ink);}
 .card .value .unit{font-size:15px;color:var(--ink-soft);font-weight:500;margin-left:4px;}
 .section{margin-top:44px;}
-.section h2{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px;}
+.section h2{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .bars{display:flex;flex-direction:column;gap:12px;}
 .bar-row{display:flex;align-items:center;gap:14px;}
 .bar-row .name{width:110px;font-size:13px;color:var(--ink-soft);flex-shrink:0;}
@@ -44,19 +38,28 @@ h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34
 .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-soft));border-radius:6px;transition:width .6s ease;}
 .bar-row .count{width:44px;text-align:right;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-dim);flex-shrink:0;}
 .meta{margin-top:44px;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-dim);line-height:2;}
-.reset-btn{
-  margin-top:44px;padding:11px 22px;border-radius:100px;border:1px solid var(--border);background:transparent;
-  color:var(--ink-soft);font-size:13px;font-family:var(--font-body);cursor:pointer;transition:.3s;
+.action-btn{
+  padding:10px 20px;border-radius:100px;border:1px solid var(--border);background:transparent;
+  color:var(--ink-soft);font-size:12.5px;font-family:var(--font-body);cursor:pointer;transition:.3s;
 }
-.reset-btn:hover{border-color:#ff6b6b;color:#ff6b6b;}
-.empty{margin-top:60px;color:var(--ink-dim);font-size:14px;}
+.action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.action-btn.danger:hover{border-color:#ff6b6b;color:#ff6b6b;}
+.action-row{display:flex;gap:10px;margin-top:44px;flex-wrap:wrap;}
+.empty{margin-top:24px;color:var(--ink-dim);font-size:14px;}
+.filter-toggle{
+  display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-dim);cursor:pointer;user-select:none;
+  border:1px solid var(--border);border-radius:100px;padding:7px 14px;margin-left:auto;
+}
+.filter-toggle input{accent-color:var(--accent);}
 .lead-card{
   background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:14px;
+  transition:opacity .3s;
 }
+.lead-card.archived{opacity:.55;}
 .lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
 .lead-company{font-family:var(--font-display);font-size:17px;font-weight:600;}
 .lead-score{
-  font-family:var(--font-mono);font-size:13px;font-weight:600;padding:5px 12px;border-radius:100px;flex-shrink:0;
+  font-family:var(--font-mono);font-size:12px;font-weight:600;padding:5px 12px;border-radius:100px;flex-shrink:0;
 }
 .lead-score.low{color:#2e8b57;background:rgba(46,139,87,.12);}
 .lead-score.moderate{color:var(--accent);background:rgba(110,140,255,.12);}
@@ -65,23 +68,49 @@ h1{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,3.4vw,34
 .lead-meta{font-size:12.5px;color:var(--ink-dim);margin-top:6px;}
 .lead-answers{margin-top:12px;font-size:13px;color:var(--ink-soft);line-height:1.9;}
 .lead-message{margin-top:10px;font-size:13px;color:var(--ink-soft);font-style:italic;border-left:2px solid var(--border);padding-left:12px;}
+.lead-controls{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center;}
+.status-select{
+  padding:8px 14px;border-radius:100px;border:1px solid var(--border);background:var(--bg);color:var(--ink);
+  font-family:var(--font-body);font-size:12.5px;cursor:pointer;
+}
+.status-select.st-nouveau{border-color:var(--accent);color:var(--accent);}
+.status-select.st-a_contacter{border-color:#c9820a;color:#c9820a;}
+.status-select.st-contacte{border-color:#3ec9c9;color:#3ec9c9;}
+.status-select.st-en_discussion{border-color:var(--accent-soft);color:var(--accent-soft);}
+.status-select.st-proposition_envoyee{border-color:#e0b23e;color:#e0b23e;}
+.status-select.st-gagne{border-color:#2e8b57;color:#2e8b57;}
+.status-select.st-perdu{border-color:#8a8f9c;color:#8a8f9c;}
 </style>
 </head>
 <body>
-  <h1>Endolori Labs — Statistiques du site</h1>
-  <p class="sub">Tableau de bord privé — accès via /fortuna_major</p>
+  <h1>Endolori Labs — Tableau de bord</h1>
+  <p class="sub">Accès privé — session sécurisée</p>
 
   <div class="warn">
-    Ces statistiques sont enregistrées de façon <strong>permanente côté serveur</strong> dans <code>data/stats.json</code> — elles cumulent les visites de <strong>tous les visiteurs du site</strong>, pas seulement ce navigateur. Cette page reste accessible uniquement en tapant "fortuna_major" au clavier sur la page d'accueil — sans ce mot de passe, on ne peut pas y accéder (protection basée sur une session de navigation, pas un vrai compte utilisateur).
+    Ces statistiques et demandes sont enregistrées de façon permanente côté serveur. Cette page n'est accessible qu'après connexion avec un nom d'utilisateur et un mot de passe valides.
   </div>
 
   <div id="content"></div>
   <div id="leadsContent"></div>
 
+  <div class="action-row">
+    <button class="action-btn danger" id="resetStatsBtn">Réinitialiser les statistiques</button>
+    <button class="action-btn" id="logoutBtn">Se déconnecter</button>
+  </div>
+
 <script>
+async function apiFetch(url, opts){
+  const res = await fetch(url, Object.assign({cache:'no-store'}, opts || {}));
+  if(res.status === 401){
+    window.location.href = '/';
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
 async function loadStats(){
   try{
-    const res = await fetch('/api/stats', {cache:'no-store'});
+    const res = await apiFetch('/api/stats');
     if(!res.ok) return null;
     return await res.json();
   }catch(e){ return null; }
@@ -156,25 +185,53 @@ async function render(){
   `;
 }
 
+const STATUS_LABELS = {
+  nouveau: 'Nouveau',
+  a_contacter: 'À contacter',
+  contacte: 'Contacté',
+  en_discussion: 'En discussion',
+  proposition_envoyee: 'Proposition envoyée',
+  gagne: 'Gagné',
+  perdu: 'Perdu'
+};
+
+let showArchived = false;
+let cachedLeads = [];
+
 async function loadLeads(){
   try{
-    const res = await fetch('/api/leads', {cache:'no-store'});
+    const res = await apiFetch('/api/leads');
     if(!res.ok) return [];
     return await res.json();
   }catch(e){ return []; }
 }
 
-async function renderLeads(){
-  const leads = await loadLeads();
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function statusOptionsHtml(current){
+  return Object.keys(STATUS_LABELS).map(key =>
+    `<option value="${key}" ${key === current ? 'selected' : ''}>${STATUS_LABELS[key]}</option>`
+  ).join('');
+}
+
+function renderLeadsList(){
   const wrap = document.getElementById('leadsContent');
-  const sorted = [...leads].sort((a,b)=> b.createdAt - a.createdAt);
-  let html = `<div class="section"><h2>Demandes reçues (${sorted.length})</h2>`;
+  const visible = cachedLeads.filter(l => showArchived ? true : !l.archived);
+  const sorted = [...visible].sort((a,b)=> b.createdAt - a.createdAt);
+
+  let html = `<div class="section"><h2>Demandes reçues (${sorted.length})
+    <label class="filter-toggle"><input type="checkbox" id="showArchivedToggle" ${showArchived ? 'checked' : ''}> Afficher les archivées</label>
+  </h2>`;
+
   if(!sorted.length){
-    html += '<p class="empty">Aucune demande reçue pour l\'instant.</p>';
+    html += '<p class="empty">Aucune demande à afficher.</p>';
   } else {
     sorted.forEach(lead=>{
+      const status = lead.status || 'nouveau';
       html += `
-        <div class="lead-card">
+        <div class="lead-card ${lead.archived ? 'archived' : ''}" data-id="${lead.id}">
           <div class="lead-top">
             <div>
               <div class="lead-company">${escapeHtml(lead.companyName)}</div>
@@ -191,42 +248,92 @@ async function renderLeads(){
             Temps perdu/semaine : ${escapeHtml(lead.answers.timeLost)}
           </div>
           ${lead.message ? `<div class="lead-message">"${escapeHtml(lead.message)}"</div>` : ''}
+          <div class="lead-controls">
+            <select class="status-select st-${status}" data-action="status" data-id="${lead.id}">
+              ${statusOptionsHtml(status)}
+            </select>
+            <button class="action-btn" data-action="archive" data-id="${lead.id}">${lead.archived ? 'Désarchiver' : 'Archiver'}</button>
+            <button class="action-btn danger" data-action="delete" data-id="${lead.id}">Supprimer</button>
+          </div>
         </div>`;
     });
   }
   html += '</div>';
   wrap.innerHTML = html;
+
+  document.getElementById('showArchivedToggle').addEventListener('change', function(){
+    showArchived = this.checked;
+    renderLeadsList();
+  });
+
+  wrap.querySelectorAll('select[data-action="status"]').forEach(sel=>{
+    sel.addEventListener('change', async function(){
+      const id = this.dataset.id;
+      const newStatus = this.value;
+      try{
+        await apiFetch(`/api/leads/${id}`, {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ status: newStatus })
+        });
+        const lead = cachedLeads.find(l => l.id === id);
+        if(lead) lead.status = newStatus;
+        this.className = 'status-select st-' + newStatus;
+      }catch(e){}
+    });
+  });
+
+  wrap.querySelectorAll('button[data-action="archive"]').forEach(btn=>{
+    btn.addEventListener('click', async function(){
+      const id = this.dataset.id;
+      const lead = cachedLeads.find(l => l.id === id);
+      if(!lead) return;
+      const nextArchived = !lead.archived;
+      try{
+        await apiFetch(`/api/leads/${id}`, {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ archived: nextArchived })
+        });
+        lead.archived = nextArchived;
+        renderLeadsList();
+      }catch(e){}
+    });
+  });
+
+  wrap.querySelectorAll('button[data-action="delete"]').forEach(btn=>{
+    btn.addEventListener('click', async function(){
+      const id = this.dataset.id;
+      if(!confirm('Supprimer définitivement cette demande ? Cette action est irréversible.')) return;
+      try{
+        await apiFetch(`/api/leads/${id}`, { method: 'DELETE' });
+        cachedLeads = cachedLeads.filter(l => l.id !== id);
+        renderLeadsList();
+      }catch(e){}
+    });
+  });
 }
 
-function escapeHtml(str){
-  return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+async function renderLeads(){
+  cachedLeads = await loadLeads();
+  renderLeadsList();
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   render();
   renderLeads();
-  const btn = document.createElement('button');
-  btn.className = 'reset-btn';
-  btn.textContent = 'Réinitialiser les statistiques (toutes, côté serveur)';
-  btn.addEventListener('click', async function(){
+
+  document.getElementById('resetStatsBtn').addEventListener('click', async function(){
     if(confirm('Effacer définitivement toutes les statistiques enregistrées sur le serveur ?')){
-      try{
-        await fetch('/api/stats/reset', {method:'POST'});
-      }catch(e){}
+      try{ await apiFetch('/api/stats/reset', {method:'POST'}); }catch(e){}
       render();
     }
   });
-  document.body.appendChild(btn);
 
-  const logout = document.createElement('button');
-  logout.className = 'reset-btn';
-  logout.style.marginLeft = '12px';
-  logout.textContent = 'Quitter la page secrète';
-  logout.addEventListener('click', function(){
-    sessionStorage.removeItem('fortuna_access');
+  document.getElementById('logoutBtn').addEventListener('click', async function(){
+    try{ await fetch('/api/auth/logout', {method:'POST'}); }catch(e){}
     window.location.href = '/';
   });
-  document.body.appendChild(logout);
 });
 </script>
 </body>

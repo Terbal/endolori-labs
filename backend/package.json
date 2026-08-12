@@ -1,0 +1,19 @@
+{
+  "name": "endolori-labs-backend",
+  "version": "1.0.0",
+  "description": "Endolori Labs \u2014 backend API (stats, leads, admin auth)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cookie-parser": "^1.4.6",
+    "nodemailer": "^6.9.14",
+    "firebase-admin": "^12.1.1",
+    "cors": "^2.8.5"
+  }
+}

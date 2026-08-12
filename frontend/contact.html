@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('endolori_theme');
+    if(t === 'light' || t === 'dark'){ document.documentElement.setAttribute('data-theme', t); }
+    var l = localStorage.getItem('endolori_lang');
+    if(l === 'en' || l === 'fr'){ document.documentElement.setAttribute('lang', l); document.documentElement.setAttribute('data-lang-pref', l); }
+  }catch(e){}
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Démarrer une conversation — Diagnostic automatisation | Endolori Labs</title>
-<meta name="description" content="Répondez à quelques questions sur votre entreprise et découvrez en 2 minutes votre score de besoin en automatisation, puis recevez un audit personnalisé d'Endolori Labs.">
+<meta name="description" content="Parlez-nous de votre organisation. Notre équipe analyse vos réponses et revient vers vous avec des observations personnalisées sur les processus qui pourraient bénéficier d'une automatisation.">
 <meta name="robots" content="noindex, follow">
 <meta name="theme-color" content="#0B1F3A">
 <link rel="canonical" href="https://endolori-labs.onrender.com/contact.html">
@@ -21,7 +31,7 @@
 <div id="cursor"></div>
 
 <nav id="nav">
-  <a href="/" class="logo" aria-label="Endolori Labs — retour à l'accueil">
+  <a href="/" class="logo" id="logoHome" aria-label="Endolori Labs — retour à l'accueil">
     <span class="logo-mark">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><circle cx="12" cy="12" r="9" stroke-width="1.2"/><circle cx="12" cy="12" r="3.4" stroke="#2563EB" stroke-width="1.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke-width="1.2"/></svg>
     </span>
@@ -171,31 +181,13 @@
       <div class="form-nav">
         <button type="button" class="btn-ghost" data-prev style="visibility:hidden;" id="prevBtn" data-i18n="lead.back">Back</button>
         <button type="button" class="btn-primary" data-next data-i18n="lead.next">Next</button>
-        <button type="submit" class="btn-primary" id="submitBtn" style="display:none;" data-i18n="lead.submit">Get my score</button>
+        <button type="submit" class="btn-primary" id="submitBtn" style="display:none;" data-i18n="lead.submit">Send</button>
       </div>
     </form>
 
-    <!-- RESULT VIEW -->
-    <div class="result-wrap" id="resultView">
-      <div class="score-ring-wrap">
-        <svg viewBox="0 0 120 120">
-          <circle class="score-ring-bg" cx="60" cy="60" r="52"></circle>
-          <circle class="score-ring-fill" id="scoreRingFill" cx="60" cy="60" r="52"></circle>
-        </svg>
-        <div class="score-value">
-          <span class="num" id="scoreNum">0</span>
-          <span class="pct">%</span>
-        </div>
-      </div>
-      <div id="resultBracket" class="result-bracket low">—</div>
-      <p class="result-explain" id="resultExplain"></p>
-      <div class="result-factors" id="resultFactors"></div>
-      <p class="result-note" data-i18n="lead.result.note">Thanks — we've received your diagnostic. Our team will follow up by email with a tailored audit and proposal.</p>
-    </div>
-
   </div>
   <p style="text-align:center;margin-top:24px;">
-    <a href="mailto:joelmoyo249@gmail.com" style="font-size:13px;color:var(--ink-dim);" data-i18n="lead.emailDirect">Prefer email? Write to us directly →</a>
+    <a href="mailto:joelmoyo249@gmail.com" id="preferEmailLink" style="font-size:13px;color:var(--ink-dim);" data-i18n="lead.emailDirect">Prefer email? Write to us directly →</a>
   </p>
 </div>
 
@@ -204,30 +196,9 @@
   <span data-i18n="footer.tag">Pioneering business automation engineering in the Democratic Republic of the Congo</span>
 </footer>
 
+<script src="/assets/js/config.js"></script>
 <script src="/assets/js/common.js"></script>
 <script src="/assets/js/i18n.js"></script>
-<script>
-document.getElementById('prevBtn').addEventListener('click', function(){
-  // toggle prev button visibility handled inline for simplicity
-});
-(function(){
-  const progress = document.querySelectorAll('.form-progress span');
-  const nextBtns = document.querySelectorAll('[data-next]');
-  const submitBtn = document.getElementById('submitBtn');
-  const prevBtn = document.getElementById('prevBtn');
-  const steps = document.querySelectorAll('.form-step');
-  function sync(){
-    const activeIndex = Array.from(steps).findIndex(s=>s.classList.contains('active'));
-    prevBtn.style.visibility = activeIndex === 0 ? 'hidden' : 'visible';
-    const lastStep = activeIndex === steps.length - 1;
-    nextBtns.forEach(b=> b.style.display = lastStep ? 'none' : 'inline-flex');
-    submitBtn.style.display = lastStep ? 'inline-flex' : 'none';
-  }
-  const obs = new MutationObserver(sync);
-  steps.forEach(s=> obs.observe(s, {attributes:true, attributeFilter:['class']}));
-  sync();
-})();
-</script>
 <script src="/assets/js/contact.js"></script>
 </body>
 </html>

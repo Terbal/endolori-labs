@@ -74,7 +74,7 @@ const translations = {
     "sip.cta.title":"See Smart Inbox in action.",
     "sip.cta.desc":"Watch the explainer video, or reach out to talk about your own workflows.",
     "lead.title":"Let's talk about your operations.",
-    "lead.subtitle":"Answer a few questions and get an instant automation-need score, plus a personalized follow-up from our team.",
+    "lead.subtitle":"Answer a few questions about how your team handles email today. Our team will review your answers and follow up with tailored observations.",
     "lead.f.companyName":"Company name",
     "lead.f.sector":"Industry (optional)",
     "lead.f.teamSize":"Team size",
@@ -94,7 +94,7 @@ const translations = {
     "lead.q.existingAutomation.none":"None","lead.q.existingAutomation.partial":"Partial","lead.q.existingAutomation.full":"Yes, fully",
     "lead.q.timeLost":"How much time does your team lose on this per week, roughly?",
     "lead.q.timeLost.low":"Less than 2h","lead.q.timeLost.medium":"2 to 5h","lead.q.timeLost.high":"5 to 15h","lead.q.timeLost.veryhigh":"More than 15h",
-    "lead.back":"Back","lead.next":"Next","lead.submit":"Get my score",
+    "lead.back":"Back","lead.next":"Next","lead.submit":"Send",
     "lead.result.note":"Thanks — we've received your diagnostic. Our team will follow up by email with a tailored audit and proposal.",
     "lead.emailDirect":"Prefer email? Write to us directly →",
   },
@@ -172,7 +172,7 @@ const translations = {
     "sip.cta.title":"Voir Smart Inbox en action.",
     "sip.cta.desc":"Regardez la vidéo explicative, ou contactez-nous pour parler de vos propres processus.",
     "lead.title":"Parlons de vos opérations.",
-    "lead.subtitle":"Répondez à quelques questions et obtenez instantanément votre score de besoin en automatisation, puis un suivi personnalisé de notre équipe.",
+    "lead.subtitle":"Répondez à quelques questions sur la façon dont votre équipe gère les e-mails aujourd'hui. Notre équipe examinera vos réponses et reviendra vers vous avec des observations sur mesure.",
     "lead.f.companyName":"Nom de l'entreprise",
     "lead.f.sector":"Secteur d'activité (optionnel)",
     "lead.f.teamSize":"Taille de l'équipe",
@@ -192,7 +192,7 @@ const translations = {
     "lead.q.existingAutomation.none":"Aucune","lead.q.existingAutomation.partial":"Partielle","lead.q.existingAutomation.full":"Oui, complète",
     "lead.q.timeLost":"Environ combien de temps votre équipe perd-elle sur ce sujet par semaine ?",
     "lead.q.timeLost.low":"Moins de 2h","lead.q.timeLost.medium":"2 à 5h","lead.q.timeLost.high":"5 à 15h","lead.q.timeLost.veryhigh":"Plus de 15h",
-    "lead.back":"Retour","lead.next":"Suivant","lead.submit":"Obtenir mon score",
+    "lead.back":"Retour","lead.next":"Suivant","lead.submit":"Envoyer",
     "lead.result.note":"Merci — nous avons bien reçu votre diagnostic. Notre équipe vous recontactera par e-mail avec un audit et une proposition sur mesure.",
     "lead.emailDirect":"Vous préférez l'e-mail ? Écrivez-nous directement →",
   }
@@ -216,9 +216,13 @@ function applyLang(lang){
 document.querySelectorAll('[data-lang-switch] button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     applyLang(btn.dataset.lang);
+    try{ localStorage.setItem('endolori_lang', btn.dataset.lang); }catch(e){}
     try{ EndoloriStats.bump('langCounts.' + btn.dataset.lang, 1); }catch(e){}
   });
 });
 
-
-applyLang('fr');
+(function(){
+  let saved = null;
+  try{ saved = localStorage.getItem('endolori_lang'); }catch(e){}
+  applyLang(saved === 'en' || saved === 'fr' ? saved : 'fr');
+})();
