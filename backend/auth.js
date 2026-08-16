@@ -12,7 +12,9 @@ const crypto = require("crypto");
 
 const SESSION_SECRET =
   process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+
 const SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12 hours
+
 const COOKIE_NAME = "eo_admin_session";
 
 function sign(value) {
@@ -20,49 +22,110 @@ function sign(value) {
     .createHmac("sha256", SESSION_SECRET)
     .update(value)
     .digest("hex");
+
   return `${value}.${h}`;
 }
 
 function createSessionToken() {
   const expiry = Date.now() + SESSION_MAX_AGE_MS;
+
   return sign(String(expiry));
 }
 
 function verifySessionToken(token) {
-  if (!token || typeof token !== "string") return false;
+  if (!token || typeof token !== "string") {
+    return false;
+  }
+
   const idx = token.lastIndexOf(".");
-  if (idx === -1) return false;
+
+  if (idx === -1) {
+    return false;
+  }
+
   const value = token.slice(0, idx);
   const sig = token.slice(idx + 1);
+
   const expected = crypto
     .createHmac("sha256", SESSION_SECRET)
     .update(value)
     .digest("hex");
-  // constant-time comparison to avoid timing attacks
+
+  // Constant-time comparison to avoid timing attacks
   const sigBuf = Buffer.from(sig);
   const expBuf = Buffer.from(expected);
+
   if (
     sigBuf.length !== expBuf.length ||
     !crypto.timingSafeEqual(sigBuf, expBuf)
-  )
+  ) {
     return false;
+  }
+
   const expiry = parseInt(value, 10);
-  if (!expiry || Date.now() > expiry) return false;
+
+  if (!expiry || Date.now() > expiry) {
+    return false;
+  }
+
   return true;
 }
 
 function checkCredentials(username, password) {
   const validUser = process.env.ADMIN_USERNAME;
   const validPass = process.env.ADMIN_PASSWORD;
-  if (!validUser || !validPass) return { ok: false, reason: "not_configured" };
-  if (username === validUser && password === validPass) return { ok: true };
-  return { ok: false, reason: "invalid" };
+
+  // Diagnostic logs.
+  // IMPORTANT: never log the actual password.
+  console.log("[auth] username received:", JSON.stringify(username));
+
+  console.log("[auth] username configured:", JSON.stringify(validUser));
+
+  console.log(
+    "[auth] password received length:",
+    password ? password.length : 0,
+  );
+
+  console.log(
+    "[auth] password configured length:",
+    validPass ? validPass.length : 0,
+  );
+
+  if (!validUser || !validPass) {
+    console.log("[auth] ERROR: ADMIN_USERNAME or ADMIN_PASSWORD is missing.");
+
+    return {
+      ok: false,
+      reason: "not_configured",
+    };
+  }
+
+  if (username === validUser && password === validPass) {
+    console.log("[auth] Credentials accepted.");
+
+    return {
+      ok: true,
+    };
+  }
+
+  console.log("[auth] Credentials rejected.");
+
+  return {
+    ok: false,
+    reason: "invalid",
+  };
 }
 
 function requireAuth(req, res, next) {
   const token = req.cookies && req.cookies[COOKIE_NAME];
-  if (verifySessionToken(token)) return next();
-  res.status(401).json({ error: "Unauthorized" });
+
+  if (verifySessionToken(token)) {
+    return next();
+  }
+
+  res.status(401).json({
+    error: "Unauthorized",
+  });
 }
 
 module.exports = {
@@ -73,29 +136,3 @@ module.exports = {
   checkCredentials,
   requireAuth,
 };
-
-function checkCredentials(username, password) {
-  const validUser = process.env.ADMIN_USERNAME;
-  const validPass = process.env.ADMIN_PASSWORD;
-
-  console.log("[auth] username received:", JSON.stringify(username));
-  console.log("[auth] username configured:", JSON.stringify(validUser));
-  console.log(
-    "[auth] password received length:",
-    password ? password.length : 0,
-  );
-  console.log(
-    "[auth] password configured length:",
-    validPass ? validPass.length : 0,
-  );
-
-  if (!validUser || !validPass) {
-    return { ok: false, reason: "not_configured" };
-  }
-
-  if (username === validUser && password === validPass) {
-    return { ok: true };
-  }
-
-  return { ok: false, reason: "invalid" };
-}

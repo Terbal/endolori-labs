@@ -1,10 +1,19 @@
 {
-  "pageViews": 0,
+  "pageViews": 2,
   "videoPlays": 0,
   "totalWatchSeconds": 0,
-  "langCounts": { "en": 0, "fr": 0 },
-  "themeCounts": { "light": 0, "dark": 0 },
-  "deviceCounts": { "mobile": 0, "desktop": 0 },
-  "firstVisit": null,
-  "lastVisit": null
+  "langCounts": {
+    "en": 0,
+    "fr": 0
+  },
+  "themeCounts": {
+    "light": 0,
+    "dark": 0
+  },
+  "deviceCounts": {
+    "mobile": 0,
+    "desktop": 3
+  },
+  "firstVisit": 1786831935574,
+  "lastVisit": 1786832020156
 }

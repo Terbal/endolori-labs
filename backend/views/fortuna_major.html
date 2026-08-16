@@ -197,6 +197,49 @@ const STATUS_LABELS = {
 
 let showArchived = false;
 let cachedLeads = [];
+let sortBy = 'date_desc';
+let statusFilter = 'all';
+
+const SORT_LABELS = {
+  date_desc: 'Date (récent → ancien)',
+  date_asc: 'Date (ancien → récent)',
+  score_desc: 'Score (élevé → faible)',
+  score_asc: 'Score (faible → élevé)',
+  company_asc: 'Entreprise (A → Z)',
+  company_desc: 'Entreprise (Z → A)',
+  status: 'Statut'
+};
+
+function sortLeads(leads){
+  const arr = [...leads];
+  switch(sortBy){
+    case 'date_asc': return arr.sort((a,b)=> a.createdAt - b.createdAt);
+    case 'score_desc': return arr.sort((a,b)=> b.score - a.score);
+    case 'score_asc': return arr.sort((a,b)=> a.score - b.score);
+    case 'company_asc': return arr.sort((a,b)=> a.companyName.localeCompare(b.companyName));
+    case 'company_desc': return arr.sort((a,b)=> b.companyName.localeCompare(a.companyName));
+    case 'status': {
+      const order = Object.keys(STATUS_LABELS);
+      return arr.sort((a,b)=> order.indexOf(a.status||'nouveau') - order.indexOf(b.status||'nouveau'));
+    }
+    case 'date_desc':
+    default: return arr.sort((a,b)=> b.createdAt - a.createdAt);
+  }
+}
+
+function sortOptionsHtml(){
+  return Object.keys(SORT_LABELS).map(key =>
+    `<option value="${key}" ${key === sortBy ? 'selected' : ''}>${SORT_LABELS[key]}</option>`
+  ).join('');
+}
+
+function statusFilterOptionsHtml(){
+  let html = `<option value="all" ${statusFilter === 'all' ? 'selected' : ''}>Tous les statuts</option>`;
+  html += Object.keys(STATUS_LABELS).map(key =>
+    `<option value="${key}" ${key === statusFilter ? 'selected' : ''}>${STATUS_LABELS[key]}</option>`
+  ).join('');
+  return html;
+}
 
 async function loadLeads(){
   try{
@@ -218,10 +261,15 @@ function statusOptionsHtml(current){
 
 function renderLeadsList(){
   const wrap = document.getElementById('leadsContent');
-  const visible = cachedLeads.filter(l => showArchived ? true : !l.archived);
-  const sorted = [...visible].sort((a,b)=> b.createdAt - a.createdAt);
+  let visible = cachedLeads.filter(l => showArchived ? true : !l.archived);
+  if(statusFilter !== 'all'){
+    visible = visible.filter(l => (l.status || 'nouveau') === statusFilter);
+  }
+  const sorted = sortLeads(visible);
 
   let html = `<div class="section"><h2>Demandes reçues (${sorted.length})
+    <select class="status-select" id="sortBySelect" style="border-color:var(--border);color:var(--ink-soft);">${sortOptionsHtml()}</select>
+    <select class="status-select" id="statusFilterSelect" style="border-color:var(--border);color:var(--ink-soft);">${statusFilterOptionsHtml()}</select>
     <label class="filter-toggle"><input type="checkbox" id="showArchivedToggle" ${showArchived ? 'checked' : ''}> Afficher les archivées</label>
   </h2>`;
 
@@ -263,6 +311,16 @@ function renderLeadsList(){
 
   document.getElementById('showArchivedToggle').addEventListener('change', function(){
     showArchived = this.checked;
+    renderLeadsList();
+  });
+
+  document.getElementById('sortBySelect').addEventListener('change', function(){
+    sortBy = this.value;
+    renderLeadsList();
+  });
+
+  document.getElementById('statusFilterSelect').addEventListener('change', function(){
+    statusFilter = this.value;
     renderLeadsList();
   });
 
